@@ -1,7 +1,6 @@
 const admin = require('firebase-admin')
 const bucket = admin.storage().bucket()
 const resizeImage = require('../utils/resizeImage')
-const bufferToStream = require('../utils/bufferToStream')
 
 module.exports = {
   store: async (req, res) => {
@@ -21,11 +20,8 @@ module.exports = {
         const imageSize = `${info.width}x${info.height}`
         const format = `.${info.format}`
         const imageName = `${name}_${imageSize}${imageStyle}${format}`
-        const file = bucket.file(imageName, { public: true })
-        const stream = bufferToStream(imageBuffer)
-        stream
-          .pipe(file.createWriteStream({ gzip: true, resumable: true }))
-          .on('finish', () => file.makePublic())
+        const file = bucket.file(imageName)
+        file.save(imageBuffer, { public: true })
         const publicUrl = file.publicUrl()
         urlImages.push(publicUrl)
       }
